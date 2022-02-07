@@ -9,7 +9,7 @@ using namespace std;
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void CloseWindowOnInput(GLFWwindow* window);
 
-int INITIALIZE(int width, int height) {
+int INITIALIZE(int width, int height, float vertices[]) {
 	glfwInit(); //INITIALIZE GLFW
 
 			//SETUP OPENGL VERSIONS FOR GLFW -> OPENGL3
@@ -42,6 +42,23 @@ int INITIALIZE(int width, int height) {
 
 	//CALLBACK SETUPS
 	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
+
+	unsigned int VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); //BIND BUFFERS TO ARRAY
+
+	/*
+	COPY VERTEX DATA INTO BUFFER
+	--> GL_ARRAY_BUFFER --> WHERE TO SEND DATA
+	--> sizeof(vertices) --> SIZE OF DATA IN BYTES TO PASS TO THE BUFFER
+	--> VERTICES --> DATA TO BE SEND TO THE BUFFER
+	--> GL_STATIC_DRAW --> HOW TO PROCESS DATA
+	*/
+
+
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 
+	
 
 
 	//LOOP WINDOW -> ONE RENDER LOOP ---> FRAME
@@ -81,7 +98,13 @@ int main() {
 
 	int windowWidth = 800;
 	int windowHeight = 600;
-	INITIALIZE(windowWidth, windowHeight);
+
+	float vertices[] = {
+	-0.5f, -0.5f, 0.0f,
+	 0.5f, -0.5f, 0.0f,
+	 0.0f,  0.5f, 0.0f
+	};
+	INITIALIZE(windowWidth, windowHeight, vertices);
 	
 	return 0;
 }
