@@ -2,7 +2,12 @@
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 #include <string>
+
+#include "Shader.h"
+
 using namespace std;
+
+
 
 
 //INITIALOZE METHODS
@@ -50,88 +55,24 @@ int INITIALIZE(int width, int height) {
 	//SHADER COMPILATION
 	//**********************
 
-	//VERTEX SHADER COMPILATION
-	const char* vertexShaderSRC = "#version 330 core\n"
-		"layout(location = 0) in vec3 vertexPosition;\n"
-		"void main() {\n"
-		"	gl_Position = vec4(vertexPosition, 1.0);\n"
-		" }\n";
+	Shader shader("vertexShader.vert","fragmentShader.frag");
 
-	unsigned int vertexShaderID;
-	vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderID, 1, &vertexShaderSRC, NULL);
-	glCompileShader(vertexShaderID);
-	
-		//CHECK IF COMPILATION WAS SUCCESFULL
-		int success;
-		char infoLOG[512];
-		glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &success);
-
-		if (!success) {
-			glGetShaderInfoLog(vertexShaderID, 512, NULL, infoLOG);
-			std::cout << "ERROR -> VERTEX SHADER COMPILATION FAILED \n" << infoLOG << std::endl;
-			return -1;
-		}
-
-	//FRAGMENT SHADER COMPILATION
-	const char* fragmentShaderSRC = "#version 330 core\n"
-		"out vec4 Color;\n"
-		"void main() {\n"
-		"	Color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-		"}\n";
-
-	unsigned int fragmentShaderID;
-	fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderID, 1, &fragmentShaderSRC, NULL);
-	glCompileShader(fragmentShaderID);
-
-		//CHECK IF COMPILATION WAS SUCCESFULL
-		glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &success);
-
-		if (!success) {
-			glGetShaderInfoLog(fragmentShaderID, 512, NULL, infoLOG);
-			std::cout << "ERROR -> FRAGMENT SHADER COMPILATION FAILED \n" << infoLOG << std::endl;
-			return -1;
-		};
-
-
-	//***********************
-	//SHADER LINKING
-	//**********************
-
-	unsigned int shaderProgramID;
-	shaderProgramID = glCreateProgram();	//CREATES SHADER PROGRAM
-	//ATTACH SHADER TO SHADERPROGRAM AND LINK THEM
-	glAttachShader(shaderProgramID, vertexShaderID);
-	glAttachShader(shaderProgramID, fragmentShaderID);
-	glLinkProgram(shaderProgramID);
-
-		//ERROR CHECK
-		glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &success);
-		if (!success) {
-			glGetProgramInfoLog(shaderProgramID, 512, NULL, infoLOG);
-			std::cout << "ERROR -> LINKING SHADERS FAILED \n" << infoLOG << std::endl;
-			return -1;
-		};
-	
-	//DELETE SHADERS 
-	glDeleteShader(vertexShaderID);
-	glDeleteShader(fragmentShaderID);
 
 
 	//*******************
 	// VBO AND VAO 
 	// ******************
 	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
+		// positions         // colors
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
+
 	};
 
 	unsigned int indices[] = {  // note that we start from 0!
 		0, 1, 3,   // first triangle
-		1, 2, 3    // second triangle
+		    // second triangle
 	};
 
 	//VAO CREATION
@@ -160,9 +101,13 @@ int INITIALIZE(int width, int height) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	//VERTEX PROCESS
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	//SEND VERTICES TO SHADER AT LOCATION 0
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	//SEND COLOURS TO SHADER AT LOCATION 1
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -182,9 +127,10 @@ int INITIALIZE(int width, int height) {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);	//SET BACKGROUND COLOR 
 		glClear(GL_COLOR_BUFFER_BIT);	//CLEAR FRANE 
 
-		glUseProgram(shaderProgramID); //USE SHADERS
+
+		shader.UseShader();
 		glBindVertexArray(VAO);	//BIND VAO
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 			
 		//CHECK FOR EVENTS CALLED BY USER OR APP
@@ -195,7 +141,6 @@ int INITIALIZE(int width, int height) {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
-	glDeleteProgram(shaderProgramID);
 
 	glfwTerminate();
 	return -1;

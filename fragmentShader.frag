@@ -2,10 +2,13 @@
 
 #version 330 core
 
-//OUTPUT VARIABLES
+//OUTPUT 
 out vec4 Color; 
+
+//INPUT 
+in vec4 fragColour;
 
 void main(){
 
-	Color = vec4( 1.0f, 0.5f, 0.2f, 1.0f);
+	Color = fragColour;
 }
