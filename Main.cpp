@@ -10,18 +10,39 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-using namespace std;
-
-
 
 
 //INITIALOZE METHODS
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
-void CloseWindowOnInput(GLFWwindow* window);
-void Transforms(Shader shader, int width, int height);
+void CloseWindowOnInput(GLFWwindow* window, glm::vec3 cameraPosition, glm::vec3 cameraForwardDir, glm::vec3 cameraUpDir, float deltaTime);
+void Transforms(Shader shader, int width, int height, glm::vec3 cameraPosition, glm::vec3 cameraForwardDir, glm::vec3 cameraUpDir);
 void worldMatrixCalc(Shader shader, int i, glm::vec3 position);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-int INITIALIZE(int width, int height) {
+int width = 800;
+int height = 600;
+
+//VARS
+glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraForwardDir = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUpDir = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+
+bool firstMouse = true;
+float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch = 0.0f;
+float lastX = 800.0f / 2.0;
+float lastY = 600.0 / 2.0;
+float fov = 45.0f;
+
+
+int main() {
+
+
 	glfwInit(); //INITIALIZE GLFW
 
 
@@ -41,6 +62,13 @@ int INITIALIZE(int width, int height) {
 	}
 
 	glfwMakeContextCurrent(window); //MAKE WINDOW MAIN CONTEXT
+	//CALLBACK SETUPS
+	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
+	// tell GLFW to capture our mouse
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	//CHECK FOR GLAD INTIALIZE
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -51,20 +79,15 @@ int INITIALIZE(int width, int height) {
 	//SET WINDOW PROPERTIES
 	glViewport(0, 0, width, height); //SET WINDOW WIDTH AND HEIGHT
 
+
 	
-
-	//CALLBACK SETUPS
-	glfwSetFramebufferSizeCallback(window, frameBufferSizeCallback);
-
 	glEnable(GL_DEPTH_TEST);
-
-	
 
 	//***********************
 	//SHADER COMPILATION
 	//**********************
 
-	Shader shader("vertexShader.vert","fragmentShader.frag");
+	Shader shader("vertexShader.vert", "fragmentShader.frag");
 
 
 
@@ -181,14 +204,14 @@ int INITIALIZE(int width, int height) {
 	glBindTexture(GL_TEXTURE_2D, textureID); //ALL TEXTURE OPERATIONS WILL AFFECT THIS TEXTURE
 
 	//TEXTURE PARAMETERS
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	//TEXTURE FILTERING
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// load image, create texture and generate mipmaps
-	int textureWidth; 
+	int textureWidth;
 	int textureHeight;
 	int colourChannels;
 	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
@@ -206,7 +229,7 @@ int INITIALIZE(int width, int height) {
 		else {
 			std::cout << "ERROR -> UKNOWN NUMBER OF COLOUR CHANNELS !" << std::endl;
 		}
-		
+
 	}
 	else
 	{
@@ -220,8 +243,23 @@ int INITIALIZE(int width, int height) {
 	while (!glfwWindowShouldClose(window))
 	{
 
+		float currentFrame = static_cast<float>(glfwGetTime());
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		float cameraStep = static_cast<float>(2.5 * deltaTime);
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			cameraPosition += cameraStep * cameraForwardDir;
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			cameraPosition -= cameraStep * cameraForwardDir;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			cameraPosition -= glm::normalize(glm::cross(cameraForwardDir, cameraUpDir)) * cameraStep;
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			cameraPosition += glm::normalize(glm::cross(cameraForwardDir, cameraUpDir)) * cameraStep;
+
 		//INPUT PROCESSS
-		CloseWindowOnInput(window);
+		CloseWindowOnInput(window, cameraPosition, cameraForwardDir, cameraUpDir, deltaTime);
 
 		//RENDER STUFF HERE !
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);	//SET BACKGROUND COLOR 
@@ -232,9 +270,10 @@ int INITIALIZE(int width, int height) {
 
 		shader.UseShader();
 
-		Transforms(shader, width, height);
+		Transforms(shader, width, height, cameraPosition, cameraForwardDir, cameraUpDir);
 
-		
+
+
 		glBindVertexArray(VAO);	//BIND VAO
 
 		for (unsigned int i = 0; i < 10; i++)
@@ -253,22 +292,25 @@ int INITIALIZE(int width, int height) {
 	glDeleteBuffers(1, &EBO);
 
 	glfwTerminate();
-	return -1;
+	return 0;
 }
+
 
 //WINDOW CALLBACK FOR WINDOW RESIZE - FIXED VIEWPORT ON RESIZE
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void CloseWindowOnInput(GLFWwindow* window) {
+void CloseWindowOnInput(GLFWwindow* window, glm::vec3 cameraPosition, glm::vec3 cameraForwardDir, glm::vec3 cameraUpDir, float deltaTime) {
 	//GET ESCAPE INPUT
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
+
+
 }
 
-void Transforms(Shader shader,int width, int height) {
+void Transforms(Shader shader, int width, int height, glm::vec3 cameraPosition, glm::vec3 cameraForwardDir, glm::vec3 cameraUpDir) {
 
 	//OBJECT ROTATION IN 2D
 	/*
@@ -281,14 +323,22 @@ void Transforms(Shader shader,int width, int height) {
 	*/
 
 	//3D SPACE
-	
+
 
 	float aspectRation = (float)width / (float)height;
 	float nearPlane = 0.1f;
 	float farPlane = 100.0f;
 
-	glm::mat4 viewMatrix = glm::mat4(1.0f);
-	viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
+	//	glm::mat4 viewMatrix = glm::mat4(1.0f);
+		//viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
+
+		//camera stuff
+	const float radius = 10.0f;
+	float camX = sin(glfwGetTime()) * radius;
+	float camZ = cos(glfwGetTime()) * radius;
+	glm::mat4 viewMatrix;
+	viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraForwardDir, cameraUpDir);
+
 	shader.setMat4("viewMatrix", viewMatrix);
 
 	glm::mat4 projectionMatrix;
@@ -296,7 +346,7 @@ void Transforms(Shader shader,int width, int height) {
 	shader.setMat4("projectionMatrix", projectionMatrix);
 }
 
-void worldMatrixCalc(Shader shader,int i, glm::vec3 position) {
+void worldMatrixCalc(Shader shader, int i, glm::vec3 position) {
 	glm::mat4 worldMatrix = glm::mat4(1.0f);
 	worldMatrix = glm::translate(worldMatrix, position);
 	float angle = 20.0f * i;
@@ -304,13 +354,50 @@ void worldMatrixCalc(Shader shader,int i, glm::vec3 position) {
 	shader.setMat4("worldMatrix", worldMatrix);
 }
 
-int main() {
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
 
-	int windowWidth = 800;
-	int windowHeight = 600;
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
 
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	lastX = xpos;
+	lastY = ypos;
 
-	INITIALIZE(windowWidth, windowHeight);
-	
-	return 0;
+	float sensitivity = 0.1f; // change this value to your liking
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	// make sure that when pitch is out of bounds, screen doesn't get flipped
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraForwardDir = glm::normalize(front);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) 
+{
+	fov -= (float)yoffset;
+	if (fov < 1.0f)
+		fov = 1.0f;
+	if (fov > 45.0f)
+		fov = 45.0f;
 }
