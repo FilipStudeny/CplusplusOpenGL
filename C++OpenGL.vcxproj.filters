@@ -33,6 +33,9 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
+    <ClCompile Include="VaoVboEbo.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
@@ -42,6 +45,12 @@
       <Filter>Zdrojové soubory\Shaders</Filter>
     </None>
     <None Include="fragmentShader.frag">
+      <Filter>Zdrojové soubory\Shaders</Filter>
+    </None>
+    <None Include="lightShader.vert">
+      <Filter>Zdrojové soubory\Shaders</Filter>
+    </None>
+    <None Include="lightShader.frag">
       <Filter>Zdrojové soubory\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -55,17 +64,14 @@
     <ClInclude Include="Camera.h">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
-    <ClInclude Include="Cube.h">
+    <ClInclude Include="Texture.h">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="VaoVboEbo.h">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="brickTexture.jpg">
-      <Filter>Soubory zdrojů\Textures</Filter>
-    </Image>
     <Image Include="container.jpg">
       <Filter>Soubory zdrojů\Textures</Filter>
     </Image>

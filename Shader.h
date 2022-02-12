@@ -150,6 +150,8 @@ public:
 
 	unsigned int GetShaderID() { return shaderID; }
 
+	void Delete() { glDeleteProgram(shaderID); }
+
 private:
 	void CheckCompileErrors(unsigned int shaderID, std::string shaderType) {
 		int success;

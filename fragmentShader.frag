@@ -10,6 +10,8 @@ in vec2 fragTextureCoords;
 
 //UNIFORMS
 uniform sampler2D textureSampler;
+uniform vec3 objectColour;
+uniform vec3 lightColour;
 
 void main(){
 

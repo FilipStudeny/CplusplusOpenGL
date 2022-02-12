@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "stb_image.h"
 #include "Camera.h"
+#include "VaoVboEbo.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -32,6 +33,29 @@ float lastMousePositionY = height / 2.0f;
 bool mouseEnteredWindow = true;
 
 Camera camera(width, height);
+
+// Vertices coordinates
+GLfloat vertices[] =
+{ //     COORDINATES     /        COLORS      /   TexCoord  //
+	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	2.5f, 5.0f
+};
+
+// Indices for vertices order
+GLuint indices[] =
+{
+	0, 1, 2,
+	0, 2, 3,
+	0, 1, 4,
+	1, 2, 4,
+	2, 3, 4,
+	3, 0, 4
+};
+
+
 
 int main() {
 
@@ -85,55 +109,22 @@ int main() {
 	//*******************
 	// VBO AND VAO 
 	// ******************
-	float vertices[] = {
-	  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-	   0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-	   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	  -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	VAO vao;
+	vao.Bind();
 
-	  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	   0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	   0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	   0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	  -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-	  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	VBO vbo(vertices, sizeof(vertices));
+	EBO ebo(indices, sizeof(indices));
 
-	  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	  -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	  -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	vao.LinkVBO(vbo, 0,3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+	vao.LinkVBO(vbo, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	vao.LinkVBO(vbo, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-	   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	   0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	   0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	   0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	vao.Unbind();
+	vbo.Unbind();
+	ebo.Unbind();
 
-	  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	   0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-	   0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	   0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	  -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	  -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-	  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	   0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	   0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	  -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-	  -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-	};
-
-	unsigned int indices[] = {
-		0, 1, 3, // first triangle
-		1, 2, 3  // second triangle
-	};
-
+	
 	//*******************
 	// OBJECTS POSITIONS 
 	// ******************
@@ -150,43 +141,8 @@ int main() {
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
-	//VAO CREATION
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
 
-	//VBO CREATION
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO); //BIND BUFFERS TO ARRAY
-
-	/*
-	COPY VERTEX DATA INTO BUFFER
-	--> GL_ARRAY_BUFFER --> WHERE TO SEND DATA
-	--> sizeof(vertices) --> SIZE OF DATA IN BYTES TO PASS TO THE BUFFER
-	--> VERTICES --> DATA TO BE SEND TO THE BUFFER
-	--> GL_STATIC_DRAW --> HOW TO PROCESS DATA
-	*/
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	//EBO - ELEMENT BUFFER OBJECTS
-	unsigned int EBO;
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	//SEND VERTICES TO SHADER AT LOCATION 0
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	//SEND COLOURS TO SHADER AT LOCATION 1
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-	//glEnableVertexAttribArray(1);
-
-	//SEND TEXTURE DATA TO SHADER AT LOCATION 2
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 
 
 	//**********************
@@ -240,6 +196,9 @@ int main() {
 			glfwSetWindowShouldClose(window, true);
 		}
 
+	
+
+
 		//RENDER STUFF HERE !
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);	//SET BACKGROUND COLOR 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	//CLEAR FRANE 
@@ -249,26 +208,34 @@ int main() {
 
 		//SHADER PROCESS
 		shader.UseShader();
+		shader.setVec3("objectColour", 1.0f, 0.5f, 0.31f);
+		shader.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
+
 		Transforms(shader, width, height);
 
 
-		glBindVertexArray(VAO);	//BIND VAO
+		vao.Bind();
 
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			worldMatrixCalc(shader, i, cubePositions[i]);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
 
 		}
+
+
 		//CHECK FOR EVENTS CALLED BY USER OR APP
 		glfwSwapBuffers(window);  //SWAP COLOUR BUFFER
 		glfwPollEvents(); //CHECK FOR EVENT TRIGGERS
 	}
 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
 
+	vao.Delete();
+	vbo.Delete();
+	ebo.Delete();
+	shader.Delete();
+
+	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
 }
