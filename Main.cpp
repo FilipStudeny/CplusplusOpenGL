@@ -284,7 +284,7 @@ int main() {
 		shader.UseShader();
 		shader.setVec4("lightColour", lightColour);
 		shader.setVec3("lightPosition", lightPosition);
-
+		shader.setVec3("cameraPosition", camera.GetCameraPosition());
 		Transforms(shader, width, height);
 
 
