@@ -7,6 +7,7 @@
 #include "stb_image.h"
 #include "Camera.h"
 #include "VaoVboEbo.h"
+#include "Texture.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,7 +18,7 @@
 //INITIALOZE METHODS
 void frameBufferSizeCallback(GLFWwindow* window, int width, int height);
 void Transforms(Shader shader, int width, int height);
-void worldMatrixCalc(Shader shader, int i, glm::vec3 position);
+void worldMatrixCalc(Shader shader, int i, glm::vec3 position, float scale);
 void MouseRotationCallback(GLFWwindow* window, double xposIn, double yposIn);
 void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
@@ -212,38 +213,11 @@ int main() {
 	//**********************
 	//	TEXTURE 
 	//**********************
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID); //ALL TEXTURE OPERATIONS WILL AFFECT THIS TEXTURE
+	Texture texture("planks.png",GL_TEXTURE_2D,0);
+	texture.UseTexture(shader,"textureSampler",0);
 
-	//TEXTURE PARAMETERS
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//TEXTURE FILTERING
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// load image, create texture and generate mipmaps
-	int textureWidth;
-	int textureHeight;
-	int colourChannels;
-	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-	unsigned char* data = stbi_load("container.jpg", &textureWidth, &textureHeight, &colourChannels, 0);
-	if (data){
-		if (colourChannels == 3) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}else if (colourChannels == 4) {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}else {
-			std::cout << "ERROR -> UKNOWN NUMBER OF COLOUR CHANNELS !" << std::endl;
-		}
-	}else{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(data);	//FREE MEMORY
-
+	Texture specularTexture("planksSpec.png", GL_TEXTURE_2D, 1);
+	specularTexture.UseTexture(shader, "specularTexture", 1);
 
 
 	//LOOP WINDOW -> ONE RENDER LOOP ---> FRAME
@@ -268,14 +242,14 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	//CLEAR FRANE 
 
 		//TEXTURE RENDER STUFF
-		glBindTexture(GL_TEXTURE_2D, textureID);
-
+		texture.Bind();
+		specularTexture.Bind();
 		//SHADER PROCESS
-
+			
 		lightShader.UseShader();
 		lightShader.setVec4("lightColour", lightColour);
 		Transforms(lightShader, width, height);
-		worldMatrixCalc(lightShader, 0, lightPosition);
+		worldMatrixCalc(lightShader, 0, lightPosition,1.0f);
 
 		lightVao.Bind();
 		glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(int), GL_UNSIGNED_INT, 0);
@@ -292,7 +266,7 @@ int main() {
 		
 		for (unsigned int i = 0; i < 1; i++)
 		{
-			worldMatrixCalc(shader, i, cubePositions[i]);
+			worldMatrixCalc(shader, i, cubePositions[i],2.0f);
 			glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(int), GL_UNSIGNED_INT, 0);
 
 		}
@@ -307,9 +281,11 @@ int main() {
 	vao.Delete();
 	vbo.Delete();
 	ebo.Delete();
+
+	texture.Delete();
+
 	shader.Delete();
 	lightVao.Delete();
-
 	lightVBO.Delete();
 	lightEBO.Delete();
 	lightShader.Delete();
@@ -338,9 +314,10 @@ void Transforms(Shader shader, int width, int height) {
 	
 }
 
-void worldMatrixCalc(Shader shader, int i, glm::vec3 position) {
+void worldMatrixCalc(Shader shader, int i, glm::vec3 position,float scale) {
 	glm::mat4 worldMatrix = glm::mat4(1.0f);
 	worldMatrix = glm::translate(worldMatrix, position);
+	worldMatrix = glm::scale(worldMatrix, glm::vec3(scale, scale, scale));
 	float angle = 20.0f * i;
 	worldMatrix = glm::rotate(worldMatrix, (float)glfwGetTime() * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 	shader.setMat4("worldMatrix", worldMatrix);

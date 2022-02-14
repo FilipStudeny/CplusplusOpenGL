@@ -12,7 +12,7 @@ in vec3 fragObjectNormals;
 
 //UNIFORMS
 uniform sampler2D textureSampler;
-
+uniform sampler2D specularTexture;
 
 //LIGHT CALC
 uniform vec4 lightColour;
@@ -32,8 +32,8 @@ void main(){
 	//SPECULAR LIGHT CALC
 	vec3 cameraViewDirection = normalize(cameraPosition - currePosition);
 	vec3 reflectionDirection = reflect(-lightDirection, fragObjectNormals);
-	float specularLightAmount = pow(max(dot(cameraViewDirection, reflectionDirection), 0.0f), 8);
+	float specularLightAmount = pow(max(dot(cameraViewDirection, reflectionDirection), 0.0f), 16);
 	float specularLight = specularLightPower * specularLightAmount;
 
-	Color = texture(textureSampler, fragTextureCoords) * lightColour * (diffuseLight + ambientLight + specularLight);
+	Color = texture(textureSampler, fragTextureCoords) * lightColour * (diffuseLight + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight;
 }

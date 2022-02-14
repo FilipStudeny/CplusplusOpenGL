@@ -36,6 +36,9 @@
     <ClCompile Include="VaoVboEbo.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
@@ -73,6 +76,18 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">
+      <Filter>Soubory zdrojů\Textures</Filter>
+    </Image>
+    <Image Include="planks.png">
+      <Filter>Soubory zdrojů\Textures</Filter>
+    </Image>
+    <Image Include="container2_specular.png">
+      <Filter>Soubory zdrojů\Textures</Filter>
+    </Image>
+    <Image Include="container2.png">
+      <Filter>Soubory zdrojů\Textures</Filter>
+    </Image>
+    <Image Include="planksSpec.png">
       <Filter>Soubory zdrojů\Textures</Filter>
     </Image>
   </ItemGroup>
