@@ -45,9 +45,28 @@ vec4 CalculatePointLight(){
 	return (texture(textureSampler, fragTextureCoords) * (diffuseLight * inten + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight * inten) * lightColour;
 }
 
+vec4 DirectionalLight(){
+
+	vec3 normal = normalize(fragObjectNormals);
+	vec3 lightDirection = normalize(vec3(1.0f, 1.0f, 0.0f));
+
+	//DIFFUSE LIGHTING
+	float diffuseLight = max(dot(normal, lightDirection), 0.0f);
+	float ambientLight = 0.20f;
+	float specularLightPower = 0.50f; //MAX INTENSITY OF LIGHT
+
+	//SPECULAR LIGHT CALC
+	vec3 cameraViewDirection = normalize(cameraPosition - currePosition);
+	vec3 reflectionDirection = reflect(-lightDirection, fragObjectNormals);
+	float specularLightAmount = pow(max(dot(cameraViewDirection, reflectionDirection), 0.0f), 16);
+	float specularLight = specularLightPower * specularLightAmount;
+
+	return (texture(textureSampler, fragTextureCoords) * (diffuseLight + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight) * lightColour;
+}
+
 void main(){
 
 
 
-	Color = CalculatePointLight();;
+	Color = DirectionalLight();
 }
