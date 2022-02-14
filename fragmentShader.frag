@@ -19,10 +19,17 @@ uniform vec4 lightColour;
 uniform vec3 lightPosition;
 uniform vec3 cameraPosition;
 
-void main(){
+
+vec4 CalculatePointLight(){
+
+	vec3 lightVector = lightPosition - currePosition;
+	float lightDistance = length(lightVector);
+	float a = 0.05;
+	float b = 0.01;
+	float inten = 1.0f / ( a * lightDistance * lightDistance + b * lightDistance + 1.0f);
 
 	vec3 normal = normalize(fragObjectNormals);
-	vec3 lightDirection = normalize(lightPosition - currePosition);
+	vec3 lightDirection = normalize(lightVector);
 
 	//DIFFUSE LIGHTING
 	float diffuseLight = max(dot(normal, lightDirection), 0.0f);
@@ -35,5 +42,12 @@ void main(){
 	float specularLightAmount = pow(max(dot(cameraViewDirection, reflectionDirection), 0.0f), 16);
 	float specularLight = specularLightPower * specularLightAmount;
 
-	Color = texture(textureSampler, fragTextureCoords) * lightColour * (diffuseLight + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight;
+	return (texture(textureSampler, fragTextureCoords) * (diffuseLight * inten + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight * inten) * lightColour;
+}
+
+void main(){
+
+
+
+	Color = CalculatePointLight();;
 }
