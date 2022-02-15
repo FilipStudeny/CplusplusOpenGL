@@ -7,6 +7,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
+
+struct Vertex {
+	glm::vec3 position;
+	glm::vec3 normal;
+	glm::vec3 colour;
+	glm::vec2 UVmap;
+};
+
 
 class VBO {
 
@@ -14,7 +23,7 @@ private:
 	GLuint ID;
 
 public:
-	VBO(GLfloat* vertices, GLsizeiptr size);
+	VBO(std::vector<Vertex>& vertices);
 
 	void Bind();
 	void Unbind();
@@ -47,7 +56,7 @@ private:
 	GLuint ID;
 
 public:
-	EBO(GLuint* triangles, GLsizeiptr size);
+	EBO(std::vector<GLuint>& triangles);
 
 	void Bind();
 	void Unbind();

@@ -13,7 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-Texture::Texture(const char* texturePath, GLenum textureType, GLuint textureSlot) {
+Texture::Texture(const char* texturePath, const char* textureType, GLuint textureSlot) {
 	this->textureType = textureType;
 	this->textureSlot = textureSlot;
 
@@ -25,28 +25,28 @@ Texture::Texture(const char* texturePath, GLenum textureType, GLuint textureSlot
 
 	glGenTextures(1, &textureID);
 	glActiveTexture(GL_TEXTURE0 + this->textureSlot);
-	glBindTexture(this->textureType, this->textureID);
+	glBindTexture(GL_TEXTURE_2D, this->textureID);
 
 	//TEXTURE PARAMETERS
-	glTexParameteri(this->textureType, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(this->textureType, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	//TEXTURE FILTERING
-	glTexParameteri(this->textureType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(this->textureType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	if (data)
 	{
 		if (colourChannels == 1) {
-			glTexImage2D(this->textureType, 0, GL_RED, textureWidth, textureHeight, 0, GL_RED, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(this->textureType);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, textureWidth, textureHeight, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 
 		}else if (colourChannels == 3) {
-			glTexImage2D(this->textureType, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(this->textureType);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 
 		}else if (colourChannels == 4) {
-			glTexImage2D(this->textureType, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(this->textureType);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureWidth, textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 
 		}else {
 			std::cout << "ERROR -> UKNOWN NUMBER OF COLOUR CHANNELS !" << std::endl;
@@ -56,7 +56,7 @@ Texture::Texture(const char* texturePath, GLenum textureType, GLuint textureSlot
 	}
 
 	stbi_image_free(data);
-	glBindTexture(this->textureType, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Texture::UseTexture(Shader shader, const char* uniform, GLuint unit) {
@@ -68,14 +68,15 @@ void Texture::UseTexture(Shader shader, const char* uniform, GLuint unit) {
 void Texture::Bind() {
 
 	glActiveTexture(GL_TEXTURE0 + this->textureSlot);
-	glBindTexture(this->textureType, this->textureID); //ALL TEXTURE OPERATIONS WILL AFFECT THIS TEXTURE
+	glBindTexture(GL_TEXTURE_2D, this->textureID); //ALL TEXTURE OPERATIONS WILL AFFECT THIS TEXTURE
 
 }
 
 void Texture::Unbind() {
-	glBindTexture(this->textureType, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Texture::Delete() {
 	glDeleteTextures(1, &this->textureID);
 }
+

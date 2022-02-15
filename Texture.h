@@ -16,15 +16,16 @@ class Texture {
 
 private:
 	GLuint textureID;
-	GLenum textureType;
 	GLuint textureSlot;
 
 public:
-	Texture(const char* texturePath, GLenum textureType, GLuint textureSlot);
+	const char* textureType;
+
+	Texture(const char* texturePath, const char* textureType, GLuint textureSlot);
 
 	void UseTexture(Shader shader, const char* uniform, GLuint unit);
 	void Bind();
 	void Unbind();
 	void Delete();
-	
+
 };

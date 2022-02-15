@@ -1,9 +1,10 @@
 #version 330 core   //VERSION OF OPENGL 3.3 CORE PROFILE
 
 layout(location = 0) in vec3 vertexPosition; //INPUT DATA -> VERTICES
-layout(location = 1) in vec3 vertexColour;
-layout(location = 2) in vec2 textureCoords;
-layout(location = 3) in vec3 vertexNormals;
+layout(location = 1) in vec3 vertexNormals;
+layout(location = 2) in vec3 vertexColour;
+layout(location = 3) in vec2 textureCoords;
+
 
 
 //LIGHT CALC

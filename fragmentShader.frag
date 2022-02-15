@@ -11,8 +11,8 @@ in vec3 currePosition;
 in vec3 fragObjectNormals;
 
 //UNIFORMS
-uniform sampler2D textureSampler;
-uniform sampler2D specularTexture;
+uniform sampler2D diffuse0;
+uniform sampler2D specular0;
 
 //LIGHT CALC
 uniform vec4 lightColour;
@@ -42,7 +42,7 @@ vec4 CalculatePointLight(){
 	float specularLightAmount = pow(max(dot(cameraViewDirection, reflectionDirection), 0.0f), 16);
 	float specularLight = specularLightPower * specularLightAmount;
 
-	return (texture(textureSampler, fragTextureCoords) * (diffuseLight * intensity + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight * intensity) * lightColour;
+	return (texture(diffuse0, fragTextureCoords) * (diffuseLight * intensity + ambientLight) + texture(specular0, fragTextureCoords).r * specularLight * intensity) * lightColour;
 }
 
 vec4 DirectionalLight(){
@@ -61,7 +61,7 @@ vec4 DirectionalLight(){
 	float specularLightAmount = pow(max(dot(cameraViewDirection, reflectionDirection), 0.0f), 16);
 	float specularLight = specularLightPower * specularLightAmount;
 
-	return (texture(textureSampler, fragTextureCoords) * (diffuseLight + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight) * lightColour;
+	return (texture(diffuse0, fragTextureCoords) * (diffuseLight + ambientLight) + texture(specular0, fragTextureCoords).r * specularLight) * lightColour;
 }
 
 vec4 SpotLight(){
@@ -85,7 +85,7 @@ vec4 SpotLight(){
 
 	float angle = dot(vec3(0.0f, -1.0f, 0.0f), -lightDirection);
 	float intensity = clamp((angle - outerConeAngle) / (innerConeAngle - outerConeAngle), 0.0f, 1.0f);
-	return (texture(textureSampler, fragTextureCoords) * (diffuseLight * intensity + ambientLight) + texture(specularTexture, fragTextureCoords).r * specularLight * intensity) * lightColour;
+	return (texture(diffuse0, fragTextureCoords) * (diffuseLight * intensity + ambientLight) + texture(specular0, fragTextureCoords).r * specularLight * intensity) * lightColour;
 }
 
 void main(){

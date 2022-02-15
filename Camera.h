@@ -17,7 +17,9 @@ private:
 
 	float yaw;
 	float pitch;
-
+	
+	float width;
+	float height;
 
 public: 
 	glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -41,6 +43,7 @@ public:
 	//****************
 	//	GETTERS
 	//****************
+	 float GetAspectRatio();
 	 float GetFOV();
 	 float GetNearPlane();
 	 float GetFarPlane();

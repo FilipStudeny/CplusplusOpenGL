@@ -22,10 +22,10 @@ void VAO::Delete() { glDeleteVertexArrays(1, &this->ID); }
 //***********
 //	VBO
 //***********
-VBO::VBO(GLfloat* vertices, GLsizeiptr size) {
+VBO::VBO(std::vector<Vertex>& vertices){
 	glGenBuffers(1, &this->ID);
 	glBindBuffer(GL_ARRAY_BUFFER, this->ID);
-	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW);
 
 	/*
 	COPY VERTEX DATA INTO BUFFER
@@ -43,10 +43,10 @@ void VBO::Delete() { glDeleteBuffers(1, &this->ID); }
 //***********
 //	EBO
 //***********
-EBO::EBO(GLuint* triangles, GLsizeiptr size) {
+EBO::EBO(std::vector<GLuint>& triangles) {
 	glGenBuffers(1, &this->ID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, triangles, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(GLuint), triangles.data(), GL_STATIC_DRAW);
 }
 
 

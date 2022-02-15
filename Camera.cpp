@@ -17,6 +17,9 @@ Camera::Camera(int width, int height) {
 	yaw = -90.0f; //-90 TO POINT CAMERA FORWARD
 	pitch = 0.0f;
 
+	this->width = width;
+	this->height = height;
+
 }
 
 //****************
@@ -34,6 +37,7 @@ void Camera::SetCameraForwardDire(glm::vec3 cameraForwardDirection) { this->came
 //****************
 //	GETTERS
 //****************
+float Camera::GetAspectRatio() { return (float)this->width / (float)this->height; }
 float Camera::GetFOV() { return this->FOV; }
 float Camera::GetNearPlane() { return this->nearPlane; }
 float Camera::GetFarPlane() { return this->farPlane; }
